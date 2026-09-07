@@ -48,8 +48,8 @@ test('strict command chain: G1 every guided state points to the next valid actio
     if(i<2){await waitFor(page,n=>window.__ADUGAME_DEBUG__().tidied.length===n,8000,i+1);await expectGuide(page,'장난감',toys[i+1][0],toys[i+1][1]);}
     else await waitFor(page,()=>window.__ADUGAME_DEBUG__().step===1);
   }
-  await expectGuide(page,'균형',555,270);
-  const healthy=[[555,270],[670,270],[785,270]];
+  await expectGuide(page,'균형',510,270);
+  const healthy=[[510,270],[625,270],[740,270]];
   for(let i=0;i<healthy.length;i++){
     await dragL(page,r,[healthy[i],[735,475]],180);
     if(i<2){await waitFor(page,n=>window.__ADUGAME_DEBUG__().chosen.length===n,8000,i+1);await expectGuide(page,'균형',healthy[i+1][0],healthy[i+1][1]);}
