@@ -5,6 +5,7 @@ function map(r,x,y){ return {x:r.x + x/1280*r.width, y:r.y + y/720*r.height}; }
 async function clickL(page,r,x,y){ const p=map(r,x,y); await page.mouse.click(p.x,p.y); }
 async function livePoint(page,key){ return page.evaluate(k=>{const s=window.__ADUGAME_SCENE__?.(),o=s?.[k];return o?{x:o.x,y:o.y}:null;},key); }
 async function liveNails(page){ return page.evaluate(()=>{const s=window.__ADUGAME_SCENE__?.();return (s?.nails||[]).filter(n=>n?.active!==false).map(n=>({x:n.x,y:n.y,index:n.nailIndex}));}); }
+async function liveKind(page,collection,kind){ return page.evaluate(({collection,kind})=>{const s=window.__ADUGAME_SCENE__?.(),o=(s?.[collection]||[]).find(x=>x?.kind===kind&&x?.active!==false);return o?{x:o.x,y:o.y}:null;},{collection,kind}); }
 async function dragL(page,r,points,duration=240){
   const ps=points.map(([x,y])=>map(r,x,y));
   await page.mouse.move(ps[0].x,ps[0].y); await page.mouse.down();
@@ -95,9 +96,13 @@ const cases=[
     await waitFor(p,()=>window.__ADUGAME_DEBUG__()?.roundComplete===true,8000);
   }],
   [1,3,async(p,r)=>{
-    for(const q of [[180,235],[315,235],[450,235]]){await dragL(p,r,[q,[255,465]],160);await p.waitForTimeout(150);}
-    for(const q of [[560,250],[680,250],[800,250]]){await dragL(p,r,[q,[735,475]],170);await p.waitForTimeout(160);}
-    for(const q of [[660,470],[735,465],[810,460]]){await dragL(p,r,[q,[1040,330]],170);await p.waitForTimeout(160);}
+    const toyKinds=['ball','book','block'];
+    for(let i=0;i<toyKinds.length;i++){const kind=toyKinds[i],q=await liveKind(p,'toys',kind);expect(q,`missing live toy ${kind}`).toBeTruthy();await dragL(p,r,[[q.x,q.y],[255,465]],160);await waitFor(p,k=>window.__ADUGAME_DEBUG__()?.tidied?.includes(k),8000,kind);}
+    await waitFor(p,()=>window.__ADUGAME_DEBUG__()?.step===1,8000);
+    const foodKinds=['apple','carrot','wholegrain'];
+    for(let i=0;i<foodKinds.length;i++){const kind=foodKinds[i],q=await liveKind(p,'foods',kind);expect(q,`missing live food ${kind}`).toBeTruthy();await dragL(p,r,[[q.x,q.y],[735,475]],170);await waitFor(p,k=>window.__ADUGAME_DEBUG__()?.chosen?.includes(k),8000,kind);}
+    await waitFor(p,()=>window.__ADUGAME_DEBUG__()?.step===2,8000);
+    for(const kind of foodKinds){const q=await liveKind(p,'foods',kind);expect(q,`missing chosen food ${kind}`).toBeTruthy();await dragL(p,r,[[q.x,q.y],[1040,330]],170);await waitFor(p,k=>window.__ADUGAME_DEBUG__()?.fed?.includes(k),8000,kind);}
   }],
   [2,1,async(p,r)=>{
     await dragL(p,r,[[315,628],[980,500]],180); await p.waitForTimeout(160);
