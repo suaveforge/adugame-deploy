@@ -36,7 +36,7 @@
 
   if(typeof G1R3!=='undefined'){
     const HEALTHY=new Set(['apple','carrot','wholegrain']);
-    const FOOD_X={apple:520,carrot:630,wholegrain:740,cookie:850,soda:960};
+    const FOOD_X={apple:510,carrot:620,wholegrain:730,cookie:840,soda:950};
     const center=o=>o?{x:o.x,y:o.y}:null;
     const nextToy=scene=>(scene.toys||[]).find(o=>o?.input?.enabled&&!scene.tidied?.has(o.kind)&&o.visible!==false);
     const nextHealthy=scene=>(scene.foods||[]).find(o=>HEALTHY.has(o.kind)&&o.visible!==false&&!scene.chosen?.includes(o));
@@ -46,8 +46,8 @@
     G1R3.prototype.create=function(){
       oldCreate.call(this);
 
-      // Keep the five real food targets evenly spaced. The previous soda-only correction
-      // collapsed cookie and soda into one hit/visual area.
+      // Keep the five real food targets evenly spaced while preserving the authored
+      // minimum clearance from the character face.
       for(const o of this.foods||[]){
         const x=FOOD_X[o.kind];
         if(Number.isFinite(x)){
@@ -153,7 +153,7 @@
 
   window.__ADUGAME_VISUAL_V6_GUARD__={
     loaded:true,
-    version:'6.2.9',
+    version:'6.2.10',
     r2ClipperSpacing:true,
     r3CharacterSpacing:true,
     r3LiveGuidance:true,
