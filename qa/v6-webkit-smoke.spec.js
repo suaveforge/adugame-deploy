@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 async function waitScene(page){
-  await page.waitForFunction(()=>window.__ADUGAME_SCENE__?.()?.v6Visual&&window.__ADUGAME_VISUAL_V6_POLISH__?.loaded&&window.__ADUGAME_VISUAL_V6_DYNAMIC__?.loaded,{timeout:12000});
+  await page.waitForFunction(()=>window.__ADUGAME_SCENE__?.()?.v6Visual&&window.__ADUGAME_VISUAL_V6_POLISH__?.loaded&&window.__ADUGAME_VISUAL_V6_DYNAMIC__?.loaded,null,{timeout:12000});
 }
 async function open(page,g,r){
   const errors=[];
@@ -19,6 +19,10 @@ async function open(page,g,r){
   return box;
 }
 function map(box,x,y){return{x:box.x+x/1280*box.width,y:box.y+y/720*box.height};}
+async function livePoint(page,key){
+  return page.evaluate(k=>{const s=window.__ADUGAME_SCENE__?.();const o=s?.[k];return o?{x:o.x,y:o.y}:null;},key);
+}
+async function waitFor(page,fn,timeout=7000){return page.waitForFunction(fn,null,{timeout});}
 
 for(let g=1;g<=3;g++)for(let r=1;r<=3;r++){
   test(`webkit v6 start G${g}R${r}`,async({page})=>{
@@ -45,11 +49,19 @@ test('webkit mobile landscape touch advances G1R1 live controls',async({browser}
   expect(box).toBeTruthy();
   expect(box.height).toBeGreaterThanOrEqual(370);
   expect(box.width).toBeGreaterThan(650);
-  let p=map(box,740,380);
+
+  // Touch the live Phaser objects, not historical design coordinates. This remains a
+  // real WebKit touchscreen input path while tracking the final authored control positions.
+  const toilet=await livePoint(page,'toilet');
+  expect(toilet).toBeTruthy();
+  let p=map(box,toilet.x,toilet.y);
   await page.touchscreen.tap(p.x,p.y);
-  await page.waitForFunction(()=>window.__ADUGAME_DEBUG__?.()?.step===.5,{timeout:7000});
-  p=map(box,790,275);
+  await waitFor(page,()=>window.__ADUGAME_DEBUG__?.()?.step===.5);
+
+  const flush=await livePoint(page,'flush');
+  expect(flush).toBeTruthy();
+  p=map(box,flush.x,flush.y);
   await page.touchscreen.tap(p.x,p.y);
-  await page.waitForFunction(()=>window.__ADUGAME_DEBUG__?.()?.step===1,{timeout:7000});
+  await waitFor(page,()=>window.__ADUGAME_DEBUG__?.()?.step===1);
   await context.close();
 });
