@@ -10,6 +10,7 @@ async function rect(page){return page.locator('canvas').boundingBox();}
 function map(r,x,y){return {x:r.x+x/1280*r.width,y:r.y+y/720*r.height};}
 async function clickL(page,r,x,y){const p=map(r,x,y);await page.mouse.click(p.x,p.y);}
 async function livePoint(page,key){return page.evaluate(k=>{const s=window.__ADUGAME_SCENE__?.(),o=s?.[k];return o?{x:o.x,y:o.y}:null;},key);}
+async function liveKind(page,collection,kind){return page.evaluate(({collection,kind})=>{const s=window.__ADUGAME_SCENE__?.(),o=(s?.[collection]||[]).find(x=>x?.kind===kind&&x?.active!==false);return o?{x:o.x,y:o.y}:null;},{collection,kind});}
 async function liveNails(page){return page.evaluate(()=>{const s=window.__ADUGAME_SCENE__?.();return (s?.nails||[]).filter(n=>n?.active!==false).map(n=>({x:n.x,y:n.y,index:n.nailIndex}));});}
 async function dragL(page,r,points,duration=240){
   const ps=points.map(([x,y])=>map(r,x,y));
@@ -102,7 +103,7 @@ async function audit(page,label,{complete=false}={}){
   await page.locator('canvas').screenshot({path:path.join(OUT,label.replace(/[^A-Za-z0-9_-]/g,'_')+'.png')});
   frames.push({label,state:snap.state,interactionLocked:snap.interactionLocked,issues});
 }
-async function completeAndAudit(page,errors,label){await waitFor(page,()=>window.__ADUGAME_DEBUG__()?.roundComplete===true,18000);expect(errors).toEqual([]);await audit(page,label,{complete:true});}
+async function completeAndAudit(page,errors,label){await waitFor(page,()=>window.__ADUGAME_DEBUG__()?.roundComplete===true,18000);await waitFor(page,()=>{const s=window.__ADUGAME_SCENE__?.();return !!s?.children?.list?.find(o=>o?.depth===9997&&o?.input?.enabled&&o?.width>=1200&&o?.height>=680);},5000);expect(errors).toEqual([]);await audit(page,label,{complete:true});}
 
 async function mixBase(p,r,colorX,label){
   const color=colorX===210?'blue':colorX===325?'green':'pink';
@@ -139,7 +140,15 @@ test('visual-gate G1R2',async({page},testInfo)=>{
 });
 
 test('visual-gate G1R3',async({page})=>{
-  const {rct:r,errors}=await openRound(page,1,3);await audit(page,'G1R3_initial');for(const q of [[180,235],[315,235],[450,235]]){await dragL(page,r,[q,[255,465]],160);await page.waitForTimeout(150);}await audit(page,'G1R3_toys');for(const q of [[560,250],[680,250],[800,250]]){await dragL(page,r,[q,[735,475]],170);await page.waitForTimeout(160);}await audit(page,'G1R3_food');for(const q of [[660,470],[735,465],[810,460]]){await dragL(page,r,[q,[1040,330]],170);await page.waitForTimeout(160);}await completeAndAudit(page,errors,'G1R3_complete');
+  const {rct:r,errors}=await openRound(page,1,3);await audit(page,'G1R3_initial');
+  const toyKinds=['ball','book','block'];
+  for(const kind of toyKinds){const q=await liveKind(page,'toys',kind);expect(q,`missing live toy ${kind}`).toBeTruthy();await dragL(page,r,[[q.x,q.y],[255,465]],160);await waitFor(page,k=>window.__ADUGAME_DEBUG__()?.tidied?.includes(k),8000,kind);}
+  await waitFor(page,()=>window.__ADUGAME_DEBUG__()?.step===1,8000);await audit(page,'G1R3_toys');
+  const foodKinds=['apple','carrot','wholegrain'];
+  for(const kind of foodKinds){const q=await liveKind(page,'foods',kind);expect(q,`missing live food ${kind}`).toBeTruthy();await dragL(page,r,[[q.x,q.y],[735,475]],170);await waitFor(page,k=>window.__ADUGAME_DEBUG__()?.chosen?.includes(k),8000,kind);}
+  await waitFor(page,()=>window.__ADUGAME_DEBUG__()?.step===2,8000);await audit(page,'G1R3_food');
+  for(const kind of foodKinds){const q=await liveKind(page,'foods',kind);expect(q,`missing chosen food ${kind}`).toBeTruthy();await dragL(page,r,[[q.x,q.y],[1040,330]],170);await waitFor(page,k=>window.__ADUGAME_DEBUG__()?.fed?.includes(k),8000,kind);}
+  await completeAndAudit(page,errors,'G1R3_complete');
 });
 
 test('visual-gate G2R1',async({page})=>{
