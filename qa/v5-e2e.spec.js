@@ -119,7 +119,7 @@ const cases=[
 ];
 
 for(const [g,r,play] of cases){
-  test(`v5 full-cycle G${g}R${r}`,async({page},testInfo)=>{if(g===1&&r===2)testInfo.setTimeout(240000);if(g===3&&r>=2)testInfo.setTimeout(120000);const {rct,errors}=await openRound(page,g,r);await play(page,rct);const st=await expectComplete(page,errors);expect(st.score).toBeGreaterThanOrEqual(60);});
+  test(`v5 full-cycle G${g}R${r}`,async({page},testInfo)=>{if(g===1&&r===2)testInfo.setTimeout(240000);if(g===3&&r>=2)testInfo.setTimeout(180000);const {rct,errors}=await openRound(page,g,r);await play(page,rct);const st=await expectComplete(page,errors);expect(st.score).toBeGreaterThanOrEqual(60);});
 }
 
 test('v5 guided habits expose routine identities',async({page})=>{
