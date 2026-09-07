@@ -26,6 +26,8 @@ jobs:
         run: npm run syntax
       - name: G1R1 benchmark interaction probe
         run: npx playwright test qa/v5-00-g1r1.spec.js
+      - name: G1R2 normal-play input gate
+        run: npx playwright test qa/v5-15-production-input.spec.js
       - name: V6 all-nine presentation gate
         run: npx playwright test qa/v5-12-visual-quality-v6.spec.js qa/v5-13-visual-truth-v6.spec.js qa/v5-14-house-dynamic-visual-v6.spec.js
       - name: Full-cycle browser gate
