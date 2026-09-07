@@ -7,6 +7,20 @@
   const FLOOR_NAMES=['차고·마당','주방·거실','욕실·세탁실','아이방·테라스'];
   const CLASSES=[G2R1,G2R2,G2R3];
 
+  // Keep the feed discovery sparkle on the character, but render its long toast in
+  // the clear header lane. The world-relative toast could cover the sink label and
+  // elevator cargo count when a character was fed on the right side of the room.
+  const originalDiscover=DiscoveryRound.prototype.discover;
+  DiscoveryRound.prototype.discover=function(id,x,y,msg){
+    if(id!=='feed_character'||!this.focusRound)return originalDiscover.call(this,id,x,y,msg);
+    if(this.discoveries.has(id))return;
+    this.discoveries.add(id);
+    this.sparkle(x,y,7);
+    const note=this.add.text(650,52,'발견! '+msg,{fontFamily:'Arial',fontSize:'15px',fontStyle:'bold',color:'#ffffff',backgroundColor:'#6c63ff',padding:{left:10,right:10,top:6,bottom:6}}).setOrigin(.5).setDepth(2500);
+    this.tweens.add({targets:note,y:28,alpha:0,duration:1050,hold:420,onComplete:()=>note.destroy()});
+    audio.pop();telemetry('discovery',{id,round:this.scene.key});
+  };
+
   for(const Klass of CLASSES){
     const originalCreate=Klass.prototype.create;
     const originalShowFloor=Klass.prototype.showFloor;
