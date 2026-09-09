@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://adugame.suaveforge.com/sitemap.xml
