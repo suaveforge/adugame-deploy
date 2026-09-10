@@ -1,8 +1,9 @@
-// ADUGAME G1R1 result-overlay reliability watchdog v1.0.
-// Preserve the canonical BaseRound result timings and UI, but use a one-shot browser timer
-// as a fallback when the Phaser scene clock stalls after the final real faucet input.
+// ADUGAME G1 result-overlay reliability watchdog v1.1.
+// Preserve the canonical BaseRound result timings and UI for G1R1/G1R2, while using a
+// one-shot browser timer fallback when the Phaser scene clock stalls after final real input.
+// Also disable completed-round world inputs before the modal appears so the result layer is modal.
 (() => {
-  if (typeof G1R1 !== 'function' || typeof FEEL === 'undefined') return;
+  if (typeof FEEL === 'undefined') return;
 
   const dualDelay = (scene, delay, callback) => {
     let fired = false;
@@ -18,7 +19,15 @@
     browserTimer = window.setTimeout(once, Math.max(0, Number(delay) || 0) + 160);
   };
 
-  G1R1.prototype.finish = function(extra = {}) {
+  const lockWorldInputs = scene => {
+    scene?.children?.list?.forEach(obj => {
+      if (!obj?.input?.enabled) return;
+      if (typeof obj.disableInteractive === 'function') obj.disableInteractive();
+      else obj.input.enabled = false;
+    });
+  };
+
+  const reliableFinish = function(extra = {}) {
     if (this.roundComplete) return;
     this.roundComplete = true;
     this.interactionLocked = true;
@@ -31,11 +40,14 @@
     });
 
     dualDelay(this, FEEL.feedback.roundClearHold, () => {
+      // A completed round must not leave actionable world targets behind the modal.
+      lockWorldInputs(this);
+
       const overlay = this.add.rectangle(640, 360, 1280, 720, 0x21304a, .7)
         .setDepth(9997)
         .setInteractive()
-        .setName('g1r1_result_overlay');
-      const card = this.add.graphics().setDepth(9998).setName('g1r1_result_card');
+        .setName(`${this.scene.key.toLowerCase()}_result_overlay`);
+      const card = this.add.graphics().setDepth(9998).setName(`${this.scene.key.toLowerCase()}_result_card`);
       card.fillStyle(0xffffff, 1).fillRoundedRect(410, 220, 460, 280, 30);
       this.add.text(640, 270, 'ROUND COMPLETE', {
         fontFamily: 'Arial', fontSize: '24px', fontStyle: 'bold', color: '#24314a'
@@ -53,16 +65,28 @@
       dualDelay(this, FEEL.feedback.resultMinHold, () => {
         next.setInteractive({useHandCursor: true}).on('pointerup', () => this.doneCb({score: finalScore}));
       });
-      this.__g1r1ResultWatchdogShown = true;
-      this.__g1r1ResultOverlay = overlay;
+      this.__g1ResultWatchdogShown = true;
+      this.__g1ResultOverlay = overlay;
     });
   };
 
+  const patchedRounds = [];
+  if (typeof G1R1 === 'function') {
+    G1R1.prototype.finish = reliableFinish;
+    patchedRounds.push('G1R1');
+  }
+  if (typeof G1R2 === 'function') {
+    G1R2.prototype.finish = reliableFinish;
+    patchedRounds.push('G1R2');
+  }
+
   window.__ADUGAME_G1R1_RESULT_WATCHDOG__ = {
-    loaded: true,
-    version: '1.0',
+    loaded: patchedRounds.length > 0,
+    version: '1.1',
+    patchedRounds,
     canonicalTimingPreserved: true,
     browserTimerFallback: true,
+    completedWorldInputLock: true,
     generatedVisualAssets: 0
   };
 })();
