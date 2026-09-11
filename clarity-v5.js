@@ -102,7 +102,16 @@
     this.status?.setText('베이스와 활성액을 그릇에 넣고 주문 색을 고른 뒤 섞어요');
     if(this.base)this.hintTarget={x:this.base.x,y:this.base.y};
     this.children.list.filter(o=>o?.name==='container_round'||o?.name==='container_square').forEach(o=>o.on('pointerup',()=>{
-      if(this.chosen.container===o.name.replace('container_','')){this.status.setText('주문 조건을 모두 맞췄어요. 손님에게 주기를 눌러요');this.hintTarget={x:this.serveButton.x,y:this.serveButton.y};}
+      const selected=this.chosen.container;
+      const wanted=this.order?.container;
+      if(wanted&&selected!==wanted){
+        const round=wanted==='round',x=round?230:380;
+        this.status.setText(`주문은 ${round?'동그란':'네모난'} 용기예요. ${round?'동그란':'네모난'} 용기를 선택해요`);
+        this.hintTarget={x,y:585};
+      }else if(!wanted||selected===wanted){
+        this.status.setText('주문 조건을 모두 맞췄어요. 손님에게 주기를 눌러요');
+        this.hintTarget={x:this.serveButton.x,y:this.serveButton.y};
+      }
     }));
     renderOrderBadges(this);
   };
@@ -115,13 +124,19 @@
     const result=originalDropDeco.call(this,o);
     this.time.delayedCall(230,()=>{
       if(!this.mixed||!this.chosen.decos.includes(o.kind))return;
-      if(this.order.container&&!this.chosen.container){const x=this.order.container==='round'?230:380;this.status.setText(`주문 장식을 올렸어요. 이제 ${this.order.container==='round'?'동그란':'네모난'} 용기를 선택해요`);this.hintTarget={x,y:585};}
-      else{this.status.setText('주문 조건을 확인하고 손님에게 주기를 눌러요');this.hintTarget={x:this.serveButton.x,y:this.serveButton.y};}
+      if(this.order.container&&this.chosen.container!==this.order.container){
+        const round=this.order.container==='round',x=round?230:380;
+        this.status.setText(`주문은 ${round?'동그란':'네모난'} 용기예요. ${round?'동그란':'네모난'} 용기를 선택해요`);
+        this.hintTarget={x,y:585};
+      }else{
+        this.status.setText('주문 조건을 확인하고 손님에게 주기를 눌러요');
+        this.hintTarget={x:this.serveButton.x,y:this.serveButton.y};
+      }
     });
     return result;
   };
   const originalNext=CraftRound.prototype.prepareNextOrder;
   CraftRound.prototype.prepareNextOrder=function(){const result=originalNext.call(this);this.status?.setText('다음 손님이에요. 베이스와 활성액부터 다시 넣어요');if(this.base)this.hintTarget={x:this.base.x,y:this.base.y};renderOrderBadges(this);return result;};
 
-  window.__ADUGAME_CLARITY_V5__={loaded:true,version:'5.2.0',houseIcons:Object.keys(ITEM_ICON).length,strictCommandMapping:true,orderBadges:true};
+  window.__ADUGAME_CLARITY_V5__={loaded:true,version:'5.2.1',houseIcons:Object.keys(ITEM_ICON).length,strictCommandMapping:true,orderBadges:true};
 })();
