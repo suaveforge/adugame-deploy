@@ -1,4 +1,4 @@
-// ADUGAME result-overlay reliability watchdog v1.4.
+// ADUGAME result-overlay reliability watchdog v1.5.
 // Preserve the canonical BaseRound result timings and UI for G1/G2/G3 rounds, while using a
 // one-shot browser timer fallback when the Phaser scene clock stalls after final real input.
 // Also disable completed-round world inputs before the modal appears so the result layer is modal.
@@ -46,6 +46,15 @@
       root.dataset.resultModalVisible = '1';
     }
     scene.orderBubble?.setVisible?.(false);
+    scene.clarityOrderBadges?.setVisible?.(false);
+    scene.orderIcons?.setVisible?.(false);
+    scene.orderLabel?.setVisible?.(false);
+    // Some clarity badge children can remain render-visible even after their former
+    // parent bubble was hidden by later layout patches. Hide the order UI tree itself.
+    scene.children?.list?.forEach(obj => walkObjectTree(obj, node => {
+      const name = String(node?.name || '');
+      if (name === 'clarity_order_badges' || name.startsWith('order_badge_')) node.setVisible?.(false);
+    }));
     scene.status?.setVisible?.(false);
     scene.serveButton?.setVisible?.(false);
   };
@@ -126,7 +135,7 @@
 
   window.__ADUGAME_G1R1_RESULT_WATCHDOG__ = {
     loaded: patchedRounds.length > 0,
-    version: '1.4',
+    version: '1.5',
     patchedRounds,
     canonicalTimingPreserved: true,
     browserTimerFallback: true,
