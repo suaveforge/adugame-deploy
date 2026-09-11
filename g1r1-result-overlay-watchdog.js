@@ -1,5 +1,5 @@
-// ADUGAME G1/G2 result-overlay reliability watchdog v1.3.
-// Preserve the canonical BaseRound result timings and UI for G1R1/G1R2/G1R3 and G2R1/G2R2/G2R3, while using a
+// ADUGAME result-overlay reliability watchdog v1.4.
+// Preserve the canonical BaseRound result timings and UI for G1/G2/G3 rounds, while using a
 // one-shot browser timer fallback when the Phaser scene clock stalls after final real input.
 // Also disable completed-round world inputs before the modal appears so the result layer is modal.
 (() => {
@@ -19,12 +19,35 @@
     browserTimer = window.setTimeout(once, Math.max(0, Number(delay) || 0) + 160);
   };
 
+  const walkObjectTree = (obj, visit) => {
+    if (!obj) return;
+    visit(obj);
+    if (Array.isArray(obj.list)) obj.list.forEach(child => walkObjectTree(child, visit));
+  };
+
   const lockWorldInputs = scene => {
-    scene?.children?.list?.forEach(obj => {
-      if (!obj?.input?.enabled) return;
-      if (typeof obj.disableInteractive === 'function') obj.disableInteractive();
-      else obj.input.enabled = false;
-    });
+    scene?.children?.list?.forEach(obj => walkObjectTree(obj, node => {
+      if (!node?.input?.enabled) return;
+      if (typeof node.disableInteractive === 'function') node.disableInteractive();
+      else node.input.enabled = false;
+    }));
+  };
+
+  const isolateResultPresentation = scene => {
+    const key = String(scene?.scene?.key || '');
+    if (!key.startsWith('G3R')) return;
+    // The authored G3 DOM layer intentionally sits above the Phaser canvas during play.
+    // Once the real round is complete, get it out of the way so the canonical result
+    // modal is actually visible to the player rather than hidden behind the shop art.
+    const root = typeof document !== 'undefined' ? document.getElementById('g3-commercial-art-v1') : null;
+    if (root) {
+      root.style.visibility = 'hidden';
+      root.style.pointerEvents = 'none';
+      root.dataset.resultModalVisible = '1';
+    }
+    scene.orderBubble?.setVisible?.(false);
+    scene.status?.setVisible?.(false);
+    scene.serveButton?.setVisible?.(false);
   };
 
   const reliableFinish = function(extra = {}) {
@@ -32,6 +55,7 @@
     this.roundComplete = true;
     this.interactionLocked = true;
     const finalScore = extra.score ?? this.score;
+    isolateResultPresentation(this);
     telemetry('round_complete', {
       round: this.scene.key,
       score: finalScore,
@@ -95,10 +119,14 @@
     G2R3.prototype.finish = reliableFinish;
     patchedRounds.push('G2R3');
   }
+  if (typeof CraftRound === 'function') {
+    CraftRound.prototype.finish = reliableFinish;
+    patchedRounds.push('G3R*');
+  }
 
   window.__ADUGAME_G1R1_RESULT_WATCHDOG__ = {
     loaded: patchedRounds.length > 0,
-    version: '1.3',
+    version: '1.4',
     patchedRounds,
     canonicalTimingPreserved: true,
     browserTimerFallback: true,
