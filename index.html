@@ -32,7 +32,15 @@
     }
   }
   </script>
-  <script async src="https://sitehub.suaveforge.com/analytics-loader.js" data-sitehub-project="p43"></script>
+  <script>
+    if (window.location.hostname === 'adugame.suaveforge.com') {
+      const sitehubAnalytics = document.createElement('script');
+      sitehubAnalytics.async = true;
+      sitehubAnalytics.src = 'https://sitehub.suaveforge.com/analytics-loader.js';
+      sitehubAnalytics.dataset.sitehubProject = 'p43';
+      document.head.appendChild(sitehubAnalytics);
+    }
+  </script>
   <!-- SITEHUB-END -->
 </head>
 <body>
@@ -101,8 +109,10 @@
   <script src="./g1-benchmark-interaction-v8.js"></script>
   <script src="./g1r2-late-layer-guard.js"></script>
   <script src="./g1r2-input-guard.js"></script>
+  <script src="./g1r2-production-input-fix.js"></script>
   <script src="./g1r1-input-guard.js"></script>
   <script src="./g1r1-native-touch-guard.js"></script>
+  <script src="./g1r1-result-overlay-watchdog.js"></script>
   <script src="./app-shell.js"></script>
 </body>
 </html>

@@ -41,7 +41,7 @@
   const oldCreate=CraftRound.prototype.create;
   CraftRound.prototype.create=function(){
     oldCreate.call(this);
-    this.children.list.filter(o=>o?.name==='container_round'||o?.name==='container_square').forEach(o=>o.on('pointerup',()=>this.time.delayedCall(50,()=>syncGuidance(this))));
+    this.children.list.filter(o=>o?.name==='container_round'||o?.name==='container_square').forEach(o=>o.on('pointerup',()=>syncGuidance(this)));
   };
 
   const oldDropIngredient=CraftRound.prototype.dropIngredient;
@@ -95,5 +95,5 @@
     return result;
   };
 
-  window.__ADUGAME_CLARITY_G3_STABLE_V5__={loaded:true,version:'5.2.14',stableConditionChain:true,ingredientSnapCallbackGuard:true,decoSnapCallbackGuard:true,wrongContainerGuard:true,wrongColorGuard:true,failedServeRecovery:true};
+  window.__ADUGAME_CLARITY_G3_STABLE_V5__={loaded:true,version:'5.2.15',stableConditionChain:true,ingredientSnapCallbackGuard:true,decoSnapCallbackGuard:true,wrongContainerGuard:true,wrongColorGuard:true,failedServeRecovery:true};
 })();
