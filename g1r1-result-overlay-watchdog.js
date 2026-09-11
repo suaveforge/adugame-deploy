@@ -1,5 +1,5 @@
-// ADUGAME G1 result-overlay reliability watchdog v1.2.
-// Preserve the canonical BaseRound result timings and UI for G1R1/G1R2/G1R3, while using a
+// ADUGAME G1/G2 result-overlay reliability watchdog v1.3.
+// Preserve the canonical BaseRound result timings and UI for G1R1/G1R2/G1R3 and G2R1/G2R2/G2R3, while using a
 // one-shot browser timer fallback when the Phaser scene clock stalls after final real input.
 // Also disable completed-round world inputs before the modal appears so the result layer is modal.
 (() => {
@@ -83,10 +83,22 @@
     G1R3.prototype.finish = reliableFinish;
     patchedRounds.push('G1R3');
   }
+  if (typeof G2R1 === 'function') {
+    G2R1.prototype.finish = reliableFinish;
+    patchedRounds.push('G2R1');
+  }
+  if (typeof G2R2 === 'function') {
+    G2R2.prototype.finish = reliableFinish;
+    patchedRounds.push('G2R2');
+  }
+  if (typeof G2R3 === 'function') {
+    G2R3.prototype.finish = reliableFinish;
+    patchedRounds.push('G2R3');
+  }
 
   window.__ADUGAME_G1R1_RESULT_WATCHDOG__ = {
     loaded: patchedRounds.length > 0,
-    version: '1.2',
+    version: '1.3',
     patchedRounds,
     canonicalTimingPreserved: true,
     browserTimerFallback: true,
