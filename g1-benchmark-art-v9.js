@@ -1,7 +1,7 @@
 // ADUGAME G1 benchmark art pass v9.0
-// Final scene-native visual pass for G1R2/R3. Functional coordinates and hit areas are preserved.
+// Final scene-native visual pass for G1R3 only. G1R2 is owned exclusively by the v17 production layer.
 (() => {
-  if (typeof G1R2 !== 'function' || typeof G1R3 !== 'function') return;
+  if (typeof G1R3 !== 'function') return;
   const P={ink:0x31546a,deep:0x4b7890,sky:0xdff6fb,sky2:0xbfe9f2,cream:0xfff7e5,floor:0xffe7bd,white:0xffffff,
     mint:0x9ee2c4,mint2:0x6fc7a0,pink:0xffa9c2,pink2:0xf47fa1,yellow:0xffd76a,blue:0x69bce4,peach:0xffc2a6,brown:0xb97854,orange:0xf2a65a,red:0xe96464};
   const kill=(scene,name)=>scene.children.list.filter(o=>o?.name===name).forEach(o=>o.destroy());
@@ -88,7 +88,6 @@
     scene.v9Art='benchmark-r3-room';
   }
 
-  const oldR2=G1R2.prototype.create;G1R2.prototype.create=function(){oldR2.call(this);this.time.delayedCall(190,()=>applyR2(this));};
   const oldR3=G1R3.prototype.create;G1R3.prototype.create=function(){oldR3.call(this);this.time.delayedCall(190,()=>applyR3(this));};
-  window.__ADUGAME_G1_BENCHMARK_ART_V9__={loaded:true,version:'9.0',r2SceneNative:true,r3SceneNative:true};
+  window.__ADUGAME_G1_BENCHMARK_ART_V9__={loaded:true,version:'9.1',r2SceneNative:false,r3SceneNative:true};
 })();
