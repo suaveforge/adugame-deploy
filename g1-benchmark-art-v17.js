@@ -97,6 +97,6 @@
     window.__ADUGAME_ART_SOURCE__=window.__ADUGAME_ART_SOURCE__||{};window.__ADUGAME_ART_SOURCE__.G1R2={scene:{name:'Children Brushing Teeth',author:'oksmith',source:'Openclipart / publicdomainq.net',license:'CC0/Public Domain'},paste:{name:'Toothpaste tube',author:'jhnri4',source:'Openclipart',license:'CC0/Public Domain'},brush:{name:'toothbrush',author:'bpcomp',source:'Openclipart',license:'CC0/Public Domain'},cloth:{name:'Schwamm col (sponge)',author:'Ilex',source:'Openclipart',license:'CC0/Public Domain'},clipper:{name:'Nail Clipper',author:'algotruneman',source:'Openclipart',license:'CC0/Public Domain'},mechanic:'toothpaste -> 4-zone brushing -> face wash -> 5 nail clips',version:'v17.6',generatedVisualAssets:0,rendering:'authored images + CSS layout only',input:'capture-phase direct mechanic routing'};
   }
 
-  const priorCreate=G1R2.prototype.create;G1R2.prototype.create=function(){priorCreate.call(this);this.time.delayedCall(650,()=>mount(this));this.time.delayedCall(1200,()=>{if(!this.__g1v17Root)mount(this);});};
+  const priorCreate=G1R2.prototype.create;G1R2.prototype.create=function(){priorCreate.call(this);mount(this);this.time.delayedCall(650,()=>{if(!this.__g1v17Root)mount(this);});};
   window.__ADUGAME_G1_BENCHMARK_ART_V17__={loaded:true,version:'17.6',generatedVisualAssets:0,directInput:true};
 })();
